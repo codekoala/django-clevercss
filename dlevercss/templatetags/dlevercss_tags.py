@@ -7,6 +7,22 @@ import clevercss
 
 register = template.Library()
 
+# the following tag was borrowed from:
+# http://repo.or.cz/w/gitology.git?a=blob;f=src/gitology/d/templatetags/clevercsstag.py
+@register.tag(name="clevercss")
+def do_clevercss(parser, token):
+    nodelist = parser.parse(('endclevercss',))
+    parser.delete_first_token()
+    return CleverCSSNode(nodelist)
+
+class CleverCSSNode(template.Node):
+    def __init__(self, nodelist):
+        self.nodelist = nodelist
+
+    def render(self, context):
+        output = self.nodelist.render(context)
+        return clevercss.convert(output)
+
 def get_clever_css(title):
     title = title.strip('"')
 
