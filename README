@@ -1,0 +1,121 @@
+Today I stumbled upon the [http://sandbox.pocoo.org/clevercss/ CleverCSS project] and decided I liked it and wanted to experiment with it.  In an effort to find a use for it, I decided to create this project that allows you to use CleverCSS in your Django templates.
+
+=What Does django-clevercss Do?=
+
+This project allows you to create CleverCSS stylesheets using the classic Django administration utility.  The use of a template tag, `get_clever_css`, will allow you to use these stylesheets that are stored in your database.  The template tag retrieve the stylesheet by its title and spits out a file on the filesystem each time the stylesheet changes in the database.  This slightly reduces the amount of overhead because the CleverCSS stylesheet does not need to be parsed for each page request.
+
+==Installation==
+
+Download `django-clevercss` using *one* of the following methods:
+
+===Checkout from Google Code===
+
+{{{
+hg clone http://django-clevercss.googlecode.com/hg/ django-clevercss
+}}}
+
+===Checkout from BitBucket===
+
+{{{
+hg clone http://bitbucket.org/codekoala/django-clevercss
+}}}
+
+===Checkout from GitHub===
+
+{{{
+git clone git://github.com/codekoala/django-clevercss.git
+}}}
+
+===Package Download===
+
+Download the latest `.tar.gz` file from the downloads section and extract it somewhere you'll remember.
+
+I'm still working on a `setup.py` script to make this easier, so for the time being you need to put the `dlevercss` (clevercss with a d) application somewhere on your `PYTHONPATH`.  Usually, a safe bet is something like `/usr/lib/python2.5/site-packages` or `C:\Python25\Lib\site-packages`.
+
+==Requirements==
+
+This application requires CleverCSS to be installed on your system.  An easy way to install this utility is to use `easy_install`:
+
+{{{
+sudo easy_install clevercss
+}}}
+
+or
+
+{{{
+easy_install clevercss
+}}}
+
+For more information and syntax help for CleverCSS, see the [http://sandbox.pocoo.org/clevercss/ project homepage].
+
+*Important note*: I built this project on Django 1.0 alpha (rev. 8222), which uses the newforms-admin.  This means that the project is currently incompatible with any revision of Django (at least the administration utility) before July 18th, 2008.  If there is enough demand, I suppose I can insert a simple `class Admin` into the model to solve the problem.  However, since I am eagerly looking forward to the official release of Django 1.0 in the near future, I will leave the code as is (again, unless there is a demand for "backward compatibility").
+
+==Usage==
+
+First of all, you must add this project to your list of `INSTALLED_APPS` in `settings.py`:
+
+{{{
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    ...
+    'dlevercss',
+    ...
+)
+}}}
+
+Run `manage.py syncdb`.
+
+Create a new stylesheet in the Django administration utility (see the [http://sandbox.pocoo.org/clevercss/ CleverCSS homepage] for syntax guidance), and save it.
+
+Then in your Django template, simply do something like this:
+
+{{{
+{% load dlevercss_tags %}
+<html>
+<head>
+<title>Django-CleverCSS</title>
+<link rel="stylesheet" type="text/css" media="all" href="{% get_clever_css "Testing" %}" />
+</head>
+<body>
+<h1>Header 1</h1>
+<p>Bla bla bla</p>
+</body>
+</html>
+}}}
+
+Note the `{% load dlevercss_tags %}` at the top of the snippet.  Assuming your `settings.MEDIA_URL` is `/media/` and the stylesheet you created in the administration utility was named _Testing_, you should end up with something like `/media/clevercss/testing.css` in the `link` tag's `href` attribute.
+
+Behind the scenes, the project checks to see if the stylesheet in the database is newer than the stylesheet on the filesystem.  If it is, the CleverCSS stylesheet in the database will be parsed by `clevercss` and crammed into a real CSS file that your templates can access and use.
+
+As of revision 4, the project includes a tag for inline CleverCSS:
+
+{{{
+{% load dlevercss_tags %}
+<html>
+<head>
+<title>Django-CleverCSS</title>
+<style type="text/css">
+{% clevercss %}
+body:
+    background-color: #333
+
+    h1:
+        color: #f00
+        weight: normal
+{% endclevercss %}
+</style>
+</head>
+<body>
+<h1>Header 1</h1>
+<p>Bla bla bla</p>
+</body>
+</html>
+}}}
+
+Be sure to watch your indentation with this tag :)
+
+Good luck!  Please contact me with any questions or concerns you have with the project!
